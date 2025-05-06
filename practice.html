@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Diffie Hellman Key Exchange</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>Diffie Hellman Key Exchange</h1>
+
+    <label for="pkey">Enter P value</label>
+    <input type="number" id="pkey" required>
+
+    <label for="gkey">Enter G value</label>
+    <input type="number" id="gkey" required>
+
+    <label for="aliceprivatekey">Enter Alice's private key</label>
+    <input type="number" id="aliceprivatekey" required>
+
+    <label for="bobprivatekey">Enter Bob's private key</label>
+    <input type="number" id="bobprivatekey" required>
+
+    <button onclick="generatekey()">Exchange Key</button>
+
+    <p>Alice's Public Key: <span id="alicepublickey"></span></p>
+    <p>Bob's Public Key: <span id="bobpublickey"></span></p>
+    <p>Alice's Shared Secret: <span id="sharedsecretalice"></span></p>
+    <p>Bob's Shared Secret: <span id="sharedsecretbob"></span></p>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    function modExp(base, exponent, mod) {
+      let result = 1;
+      base = base % mod;
+      while (exponent > 0) {
+        if (exponent % 2 === 1) {
+          result = (result * base) % mod;
+        }
+        exponent = Math.floor(exponent / 2);
+        base = (base * base) % mod;
+      }
+      return result;
+    }
+
+    function isPrimitive(p, g) {
+      if (p <= 1 || g <= 1 || g >= p) {
+        return false;
+      }
+      let remainders = new Set();
+      for (let k = 1; k < p; k++) {
+        let remainder = modExp(g, k, p);
+        if (remainders.has(remainder)) {
+          return false;
+        }
+        remainders.add(remainder);
+      }
+      return true;
+    }
+
+    function generatekey() {
+      const p = parseInt(document.getElementById("pkey").value);
+      const g = parseInt(document.getElementById("gkey").value);
+      const alicePrivateKey = parseInt(document.getElementById("aliceprivatekey").value);
+      const bobPrivateKey = parseInt(document.getElementById("bobprivatekey").value);
+
+      if (!isPrimitive(p, g)) {
+        document.getElementById("result").textContent = "P and G are not valid. Key exchange failed.";
+        return;
+      }
+
+      const alicePublicKey = modExp(g, alicePrivateKey, p);
+      const bobPublicKey = modExp(g, bobPrivateKey, p);
+
+      const sharedSecretAlice = modExp(bobPublicKey, alicePrivateKey, p);
+      const sharedSecretBob = modExp(alicePublicKey, bobPrivateKey, p);
+
+      document.getElementById("alicepublickey").textContent = alicePublicKey;
+      document.getElementById("bobpublickey").textContent = bobPublicKey;
+      document.getElementById("sharedsecretalice").textContent = sharedSecretAlice;
+      document.getElementById("sharedsecretbob").textContent = sharedSecretBob;
+
+      if (sharedSecretAlice === sharedSecretBob) {
+        document.getElementById("result").textContent = "Shared secrets match! Key exchange successful.";
+      } else {
+        document.getElementById("result").textContent = "Shared secrets do not match! Key exchange failed.";
+      }
+    }
+  </script>
+</body>
+</html>

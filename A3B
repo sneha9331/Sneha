@@ -1,0 +1,44 @@
+def min_key(key,mst_set,V):
+    min_val = float('inf')
+    min_index = -1
+    
+    for v in range(V):
+        if not mst_set[v] and key[v] < min_val:
+            min_val = key[v]
+            min_index = v
+    return min_index
+def print_mst(parent,graph,V):
+    print("Edges \t Weight")
+    total_cost = 0
+    for i in range(1,V):
+        print(parent[i],"\t-\t",graph[i][parent[i]])
+        total_cost += graph[i][parent[i]]
+    print("Total Cost is",total_cost)
+
+def prim_mst(graph,V):
+    key = [float('inf')]*V
+    parent = [None]*V
+    mst_set = [False]*V
+    
+    key[0] = 0
+    parent[0] = -1
+    
+    for _ in range(V-1):
+        u = min_key(key,mst_set,V)
+        mst_set[u] = True
+        
+        for v in range(V):
+            if graph[u][v] != 0 and not mst_set[v] and graph[u][v] < key[v]:
+                key[v] = graph[u][v]
+                parent[v] = u
+    print_mst(parent,graph,V)
+
+v = int(input("Enter the nummber of vertices:"))
+graph = []
+
+print("Enter the adjaceny matrix(row by row):")
+for _ in range(v):
+    row = list(map(int,input().split()))
+    graph.append(row)
+    
+prim_mst(graph,v)
